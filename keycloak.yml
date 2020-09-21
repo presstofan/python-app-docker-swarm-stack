@@ -1,0 +1,53 @@
+version: "3.4"
+
+services:
+  keycloak_db:
+    image: postgres:11.2-alpine
+    environment:
+        - POSTGRES_DB=keycloak
+        - POSTGRES_USER=keycloak
+        - POSTGRES_PASSWORD=changeme-postgres
+        - POSTGRES_ROOT_PASSWORD=changeme-rootpw
+    networks:
+      - keycloak-net
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    labels:
+      - "traefik.enable=false"
+
+  keycloak:
+    image: jboss/keycloak:11.0.2
+    hostname: keycloak
+    environment:
+      - DB_VENDOR=POSTGRES
+      - DB_ADDR=keycloak_db
+      - DB_DATABASE=keycloak
+      - DB_PORT=5432
+      - DB_USER=keycloak
+      - DB_SCHEMA=public
+      - DB_PASSWORD=changeme-postgres
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_LOGLEVEL=INFO
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=changeme-keycloak
+    networks:
+      - traefik-public
+      - keycloak-net
+    labels:
+      - traefik.enable=true # enable traefik
+      - traefik.docker.network=traefik-public # put it in the same network as traefik
+      - traefik.constraint-label=traefik-public # assign the same label as traefik so it can be discovered
+      - traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 80 for request to KEYCLOAK_DOMAIN (use together with the line below)
+      - traefik.http.routers.keycloak.entrypoints=http
+      - traefik.http.middlewares.keycloak.redirectscheme.scheme=https # redirect traffic to https
+      - traefik.http.middlewares.keycloak.redirectscheme.permanent=true # redirect traffic to https
+      - traefik.http.routers.keycloak-secured.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 443 for request to KEYCLOAK_DOMAIN (use together with the line below)
+      - traefik.http.routers.keycloak-secured.entrypoints=https
+      - traefik.http.routers.keycloak-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
+      - traefik.http.services.keycloak-secured.loadbalancer.server.port=8443 # ask Traefik to search for port 8443 of the Keycloak service container
+    command: ["-b", "0.0.0.0", "-Dkeycloak.profile.feature.docker=enabled"]
+
+networks:
+    traefik-public:
+        external: true # this is the network we set up earlier
+    keycloak-net:
