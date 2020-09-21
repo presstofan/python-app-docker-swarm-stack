@@ -1,7 +1,6 @@
 version: '3.3'
 
 services:
-
   stapp:
     image: presstofan/streamlit-demo
     # The labels section is where you specify configuration values for Traefik.
