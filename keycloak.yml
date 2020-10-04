@@ -1,13 +1,12 @@
 version: "3.4"
 
 services:
-  keycloak_db:
-    image: postgres:11.9-alpine
+  postgres:
+    image: postgres:13.0
     environment:
         - POSTGRES_DB=keycloak
         - POSTGRES_USER=keycloak
-        - POSTGRES_PASSWORD=changeme-postgres
-        - POSTGRES_ROOT_PASSWORD=changeme-rootpw
+        - POSTGRES_PASSWORD=password
     networks:
       - traefik-public
     volumes:
@@ -18,20 +17,21 @@ services:
   keycloak:
     image: jboss/keycloak:11.0.2
     depends_on:
-      - keycloak_db
+      - postgres
     hostname: keycloak
     environment:
-      - DB_VENDOR=POSTGRES
-      - DB_ADDR=keycloak_db
-      - DB_DATABASE=keycloak
-      - DB_PORT=5432
-      - DB_USER=keycloak
-      - DB_SCHEMA=public
-      - DB_PASSWORD=changeme-postgres
-      - PROXY_ADDRESS_FORWARDING=true
-      - KEYCLOAK_LOGLEVEL=INFO
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=changeme-keycloak
+      DB_USER=keycloak
+      DB_PASSWORD=password
+      # - DB_VENDOR=POSTGRES
+      # - DB_DATABASE=keycloak
+      # - DB_PORT=5432
+      # - DB_USER=keycloak
+      # - DB_SCHEMA=public
+      # - DB_PASSWORD=changeme-postgres
+      # - PROXY_ADDRESS_FORWARDING=true
+      # - KEYCLOAK_LOGLEVEL=INFO
+      # - KEYCLOAK_USER=admin
+      # - KEYCLOAK_PASSWORD=changeme-keycloak
     networks:
       - traefik-public
     labels:
