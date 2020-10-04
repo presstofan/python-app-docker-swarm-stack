@@ -17,6 +17,8 @@ services:
 
   keycloak:
     image: jboss/keycloak:11.0.2
+    depends_on:
+      - keycloak_db
     hostname: keycloak
     environment:
       - DB_VENDOR=POSTGRES
