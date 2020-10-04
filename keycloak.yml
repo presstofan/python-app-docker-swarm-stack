@@ -2,14 +2,14 @@ version: "3.4"
 
 services:
   keycloak_db:
-    image: postgres:11.2-alpine
+    image: postgres:11.9-alpine
     environment:
         - POSTGRES_DB=keycloak
         - POSTGRES_USER=keycloak
         - POSTGRES_PASSWORD=changeme-postgres
         - POSTGRES_ROOT_PASSWORD=changeme-rootpw
     networks:
-      - keycloak-net
+      - traefik-public
     volumes:
       - ./data:/var/lib/postgresql/data
     labels:
@@ -32,7 +32,6 @@ services:
       - KEYCLOAK_PASSWORD=changeme-keycloak
     networks:
       - traefik-public
-      - keycloak-net
     labels:
       - traefik.enable=true # enable traefik
       - traefik.docker.network=traefik-public # put it in the same network as traefik
@@ -49,6 +48,4 @@ services:
 
 networks:
     traefik-public:
-        external: true # this is the network we set up earlier
-    keycloak-net:
         external: true # this is the network we set up earlier
