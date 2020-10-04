@@ -20,8 +20,8 @@ services:
       - postgres
     hostname: keycloak
     environment:
-      DB_USER=keycloak
-      DB_PASSWORD=password
+      - DB_USER=keycloak
+      - DB_PASSWORD=password
       # - DB_VENDOR=POSTGRES
       # - DB_DATABASE=keycloak
       # - DB_PORT=5432
