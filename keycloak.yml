@@ -18,7 +18,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro    
     networks:
-      - traefik_public
+      - traefik-public
       - internal
     deploy:
       labels:
@@ -79,7 +79,7 @@ services:
       - internal
 
 networks:
-  traefik_public:
+  traefik-public:
     external: true
   internal:
     driver: overlay
