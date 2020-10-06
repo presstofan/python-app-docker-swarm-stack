@@ -34,8 +34,7 @@ services:
         - traefik.http.routers.keycloak-secured.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 443 for request to KEYCLOAK_DOMAIN (use together with the line below)
         - traefik.http.routers.keycloak-secured.entrypoints=https
         - traefik.http.routers.keycloak-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
-        - traefik.http.services.keycloak-secured.loadbalancer.server.port=8443 # ask Traefik to search for port 8443 of the Keycloak service container
-        - traefik.http.routers.keycloak-secured.service=keycloak
+        - traefik.http.services.keycloak-secured.loadbalancer.server.port=8080 # ask Traefik to search for port 8080 of the Keycloak service container
 
   keycloak-db:
     image: postgres:10.1
