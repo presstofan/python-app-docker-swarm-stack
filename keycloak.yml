@@ -3,6 +3,8 @@ version: '3'
 services:
   keycloak:
     image: jboss/keycloak
+    depends_on:
+      - keycloak-db
     environment:
       - DB_VENDOR=postgres
       - DB_DATABASE=keycloak
@@ -12,7 +14,7 @@ services:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=changeme
       - PROXY_ADDRESS_FORWARDING=true # This is required to run keycloak behind traefik
-      - KEYCLOAK_HOSTNAME=`${KEYCLOAK_DOMAIN?Variable not set}`
+      - KEYCLOAK_HOSTNAME=${KEYCLOAK_DOMAIN?Variable not set}
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=changeme
     volumes:
@@ -33,6 +35,7 @@ services:
         - traefik.http.routers.keycloak-secured.entrypoints=https
         - traefik.http.routers.keycloak-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
         - traefik.http.services.keycloak-secured.loadbalancer.server.port=8443 # ask Traefik to search for port 8443 of the Keycloak service container
+        - traefik.http.routers.keycloak-secured.service=keycloak
 
   keycloak-db:
     image: postgres:10.1
@@ -45,9 +48,10 @@ services:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=changeme
       - PROXY_ADDRESS_FORWARDING=true # This is required to run keycloak behind traefik
-      - KEYCLOAK_HOSTNAME=`${KEYCLOAK_DOMAIN?Variable not set}`
+      - KEYCLOAK_HOSTNAME=${KEYCLOAK_DOMAIN?Variable not set}
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=changeme
+      - KEYCLOAK_LOGLEVEL=WARNING
     volumes:
       - /var/data/runtime/keycloak/database:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro    
