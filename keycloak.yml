@@ -21,7 +21,7 @@ services:
       - /etc/localtime:/etc/localtime:ro    
     networks:
       - traefik-public
-      - internal
+      - keycloak-internal
     deploy:
       labels:
         - traefik.enable=true # enable traefik
@@ -56,7 +56,7 @@ services:
       - /var/data/runtime/keycloak/database:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro    
     networks:
-      - internal
+      - keycloak-internal
 
   keycloak-db-backup:
     image: postgres:10.1
@@ -80,12 +80,12 @@ services:
       done
       EOF'
     networks:
-      - internal
+      - keycloak-internal
 
 networks:
   traefik-public:
     external: true
-  internal:
+  keycloak-internal:
     driver: overlay
     ipam:
       config:
