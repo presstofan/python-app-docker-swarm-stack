@@ -18,7 +18,7 @@ services:
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=changeme
     volumes:
-      - /etc/localtime:/etc/localtime:ro    
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - traefik-public
       - keycloak-internal
@@ -53,7 +53,7 @@ services:
       - KEYCLOAK_LOGLEVEL=WARNING
     volumes:
       - /var/data/runtime/keycloak/database:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro    
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - keycloak-internal
 
