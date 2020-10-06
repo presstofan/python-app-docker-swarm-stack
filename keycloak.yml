@@ -1,53 +1,90 @@
-version: "3.4"
+version: '3'
 
 services:
-  postgres:
-    image: postgres:13.0
-    environment:
-        - POSTGRES_DB=keycloak
-        - POSTGRES_USER=keycloak
-        - POSTGRES_PASSWORD=password
-    networks:
-      - traefik-public
-    volumes:
-      - ./data:/var/lib/postgresql/data
-    labels:
-      - traefik.enable=false
-
   keycloak:
-    image: jboss/keycloak:11.0.2
-    depends_on:
-      - postgres
-    hostname: keycloak
+    image: jboss/keycloak
     environment:
+      - DB_VENDOR=postgres
+      - DB_DATABASE=keycloak
+      - DB_ADDR=keycloak-db
       - DB_USER=keycloak
-      - DB_PASSWORD=password
-      # - DB_VENDOR=POSTGRES
-      # - DB_DATABASE=keycloak
-      # - DB_PORT=5432
-      # - DB_USER=keycloak
-      # - DB_SCHEMA=public
-      # - DB_PASSWORD=changeme-postgres
-      # - PROXY_ADDRESS_FORWARDING=true
-      # - KEYCLOAK_LOGLEVEL=INFO
-      # - KEYCLOAK_USER=admin
-      # - KEYCLOAK_PASSWORD=changeme-keycloak
+      - DB_PASSWORD=changeme
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=changeme
+      - PROXY_ADDRESS_FORWARDING=true # This is required to run keycloak behind traefik
+      - KEYCLOAK_HOSTNAME=`${KEYCLOAK_DOMAIN?Variable not set}`
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=changeme
+    volumes:
+      - /etc/localtime:/etc/localtime:ro    
     networks:
-      - traefik-public
-    labels:
-      - traefik.enable=true # enable traefik
-      - traefik.docker.network=traefik-public # put it in the same network as traefik
-      - traefik.constraint-label=traefik-public # assign the same label as traefik so it can be discovered
-      - traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 80 for request to KEYCLOAK_DOMAIN (use together with the line below)
-      - traefik.http.routers.keycloak.entrypoints=http
-      - traefik.http.middlewares.keycloak.redirectscheme.scheme=https # redirect traffic to https
-      - traefik.http.middlewares.keycloak.redirectscheme.permanent=true # redirect traffic to https
-      - traefik.http.routers.keycloak-secured.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 443 for request to KEYCLOAK_DOMAIN (use together with the line below)
-      - traefik.http.routers.keycloak-secured.entrypoints=https
-      - traefik.http.routers.keycloak-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
-      - traefik.http.services.keycloak-secured.loadbalancer.server.port=8443 # ask Traefik to search for port 8443 of the Keycloak service container
-    command: ["-b", "0.0.0.0", "-Dkeycloak.profile.feature.docker=enabled"]
+      - traefik_public
+      - internal
+    deploy:
+      labels:
+        - traefik.enable=true # enable traefik
+        - traefik.docker.network=traefik-public # put it in the same network as traefik
+        - traefik.constraint-label=traefik-public # assign the same label as traefik so it can be discovered
+        - traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 80 for request to KEYCLOAK_DOMAIN (use together with the line below)
+        - traefik.http.routers.keycloak.entrypoints=http
+        - traefik.http.middlewares.keycloak.redirectscheme.scheme=https # redirect traffic to https
+        - traefik.http.middlewares.keycloak.redirectscheme.permanent=true # redirect traffic to https
+        - traefik.http.routers.keycloak-secured.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 443 for request to KEYCLOAK_DOMAIN (use together with the line below)
+        - traefik.http.routers.keycloak-secured.entrypoints=https
+        - traefik.http.routers.keycloak-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
+        - traefik.http.services.keycloak-secured.loadbalancer.server.port=8443 # ask Traefik to search for port 8443 of the Keycloak service container
+
+  keycloak-db:
+    image: postgres:10.1
+    environment:
+      - DB_VENDOR=postgres
+      - DB_DATABASE=keycloak
+      - DB_ADDR=keycloak-db
+      - DB_USER=keycloak
+      - DB_PASSWORD=changeme
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=changeme
+      - PROXY_ADDRESS_FORWARDING=true # This is required to run keycloak behind traefik
+      - KEYCLOAK_HOSTNAME=`${KEYCLOAK_DOMAIN?Variable not set}`
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=changeme
+    volumes:
+      - /var/data/runtime/keycloak/database:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro    
+    networks:
+      - internal
+
+  keycloak-db-backup:
+    image: postgres:10.1
+    environment:
+      - PGHOST=keycloak-db
+      - PGUSER=keycloak
+      - PGPASSWORD=myuberpassword
+      - BACKUP_NUM_KEEP=7
+      - BACKUP_FREQUENCY=1d
+    volumes:
+      - /var/data/keycloak/database-dump:/dump
+      - /etc/localtime:/etc/localtime:ro
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 2m
+      while /bin/true; do
+        pg_dump -Fc > /dump/dump_\`date +%d-%m-%Y"_"%H_%M_%S\`.psql
+        (ls -t /dump/dump*.psql|head -n $$BACKUP_NUM_KEEP;ls /dump/dump*.psql)|sort|uniq -u|xargs rm -- {}
+        sleep $$BACKUP_FREQUENCY
+      done
+      EOF'
+    networks:
+      - internal
 
 networks:
-    traefik-public:
-        external: true # this is the network we set up earlier
+  traefik_public:
+    external: true
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        # Setup unique static subnets for every stack you deploy. 
+        # This avoids IP/gateway conflicts which can otherwise occur when you're creating/removing stacks a lot.
+        - subnet: 172.16.49.0/24
