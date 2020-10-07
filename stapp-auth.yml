@@ -12,13 +12,14 @@ services:
       - PROVIDERS_OIDC_CLIENT_SECRET=89dcc759-b581-42b2-b0ed-83ade1c5e079 # Keycloak client secret
       - SECRET=g5g6c2rtvk # something random
       - INSECURE_COOKIE=true # INSECURE_COOKIE is required if not using a https entrypoint
-    labels:
-      - traefik.enable=true # enable traefik      
-      - traefik.docker.network=traefik-public # put it in the same network as traefik
-      - traefik.constraint-label=traefik-public # assign the same label as traefik so it can be discovered      
-      - traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181
-      - traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User
-      - traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181
+      deploy:
+        labels:
+          - traefik.enable=true # enable traefik      
+          - traefik.docker.network=traefik-public # put it in the same network as traefik
+          - traefik.constraint-label=traefik-public # assign the same label as traefik so it can be discovered      
+          - traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181
+          - traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User
+          - traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181
 
   stapp:
     image: presstofan/streamlit-demo
