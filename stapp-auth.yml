@@ -5,7 +5,8 @@ services:
     image: thomseddon/traefik-forward-auth:2
     networks:
       - traefik-public
-    restart: always
+    restart_policy:
+      condition: on-failure
     environment:
       - DEFAULT_PROVIDER=oidc
       - PROVIDERS_OIDC_ISSUER_URL=https://${KEYCLOAK_DOMAIN?Variable not set}/auth/realms/master # this is set to "master" realm
