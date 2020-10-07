@@ -10,7 +10,7 @@ services:
       - DEFAULT_PROVIDER=oidc
       - PROVIDERS_OIDC_ISSUER_URL=https://${KEYCLOAK_DOMAIN?Variable not set}/auth/realms/master # this is set to "master" realm
       - PROVIDERS_OIDC_CLIENT_ID=stapp # Keycloak client id
-      - PROVIDERS_OIDC_CLIENT_SECRET=9b316967-8c47-4b52-a412-3cabc7e56248 # Keycloak client secret
+      - PROVIDERS_OIDC_CLIENT_SECRET=89dcc759-b581-42b2-b0ed-83ade1c5e079 # Keycloak client secret
       - SECRET=g5g6c2rtvk # something random
       # - INSECURE_COOKIE=true # INSECURE_COOKIE is required if not using a https entrypoint
     labels:
