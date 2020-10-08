@@ -52,8 +52,8 @@ services:
         - "traefik.http.routers.stapp.rule=Host(`${APP_DOMAIN?Variable not set}`)"
         - "traefik.http.routers.stapp.entrypoints=http"
         # redirect HTTP to HTTPS and add SSL certificate
-        - "traefik.http.middlewares.stapp-secured.redirectscheme.scheme=https" # redirect traffic to https
-        - "traefik.http.middlewares.stapp-secured.redirectscheme.permanent=true" # redirect traffic to https
+        - "traefik.http.middlewares.stapp-https-redirect.redirectscheme.scheme=https" # redirect traffic to https
+        - "traefik.http.middlewares.stapp-https-redirect.redirectscheme.permanent=true" # redirect traffic to https
         - "traefik.http.routers.stapp-secured.rule=Host(`${APP_DOMAIN?Variable not set}`)" # listen to port 443 for request to APP_DOMAIN (use together with the line below)
         - "traefik.http.routers.stapp-secured.entrypoints=https"
         - "traefik.http.routers.stapp-secured.tls.certresolver=le" # use the Let's Encrypt certificate we set up earlier
@@ -61,8 +61,8 @@ services:
         - "traefik.http.routers.stapp-secured.service=stapp"
         - "traefik.http.routers.stapp-secured.middlewares=stapp@docker"
         # redirect to Keycloak for authentication
-        - "traefik.http.middlewares.stapp.forwardauth.address=http://traefik-forward-auth:4181"
-        - "traefik.http.middlewares.stapp.forwardauth.authresponseheaders=X-Forwarded-User"
+        - "traefik.http.middlewares.stapp-auth.forwardauth.address=http://traefik-forward-auth:4181"
+        - "traefik.http.middlewares.stapp-auth.forwardauth.authresponseheaders=X-Forwarded-User"
         - "traefik.http.services.stapp.loadbalancer.server.port=8501"
 
     volumes:
