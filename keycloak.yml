@@ -29,8 +29,8 @@ services:
         - traefik.constraint-label=traefik-public # assign the same label as traefik so it can be discovered
         - traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 80 for request to KEYCLOAK_DOMAIN (use together with the line below)
         - traefik.http.routers.keycloak.entrypoints=http
-        - traefik.http.middlewares.keycloak.redirectscheme.scheme=https # redirect traffic to https
-        - traefik.http.middlewares.keycloak.redirectscheme.permanent=true # redirect traffic to https
+        - traefik.http.middlewares.keycloak-https-redirect.redirectscheme.scheme=https # redirect traffic to https
+        - traefik.http.middlewares.keycloak-https-redirect.redirectscheme.permanent=true # redirect traffic to https
         - traefik.http.routers.keycloak-secured.rule=Host(`${KEYCLOAK_DOMAIN?Variable not set}`) # listen to port 443 for request to KEYCLOAK_DOMAIN (use together with the line below)
         - traefik.http.routers.keycloak-secured.entrypoints=https
         - traefik.http.routers.keycloak-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
