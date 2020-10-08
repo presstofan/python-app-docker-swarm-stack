@@ -54,8 +54,8 @@ services:
         - traefik.http.routers.stapp-secured.rule=Host(`${APP_DOMAIN?Variable not set}`) # listen to port 443 for request to APP_DOMAIN (use together with the line below)
         - traefik.http.routers.stapp-secured.entrypoints=https
         - traefik.http.routers.stapp-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
-        - traefik.http.middlewares.test-auth.forwardauth.address=http://traefik-forward-auth:4181
-        - traefik.http.middlewares.test-auth.forwardauth.trustForwardHeader=true
+        - traefik.http.middlewares.stapp-secured.forwardauth.address=http://traefik-forward-auth:4181
+        - traefik.http.middlewares.stapp-secured.forwardauth.trustForwardHeader=true
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
