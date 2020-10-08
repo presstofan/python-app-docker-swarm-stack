@@ -56,6 +56,7 @@ services:
         - traefik.http.routers.stapp-secured.tls.certresolver=le # use the Let's Encrypt certificate we set up earlier
         - traefik.http.middlewares.stapp-secured.forwardauth.address=http://traefik-forward-auth:4181
         - traefik.http.middlewares.stapp-secured.forwardauth.trustForwardHeader=true
+        - traefik.http.middlewares.stapp-secured.forwardauth.authResponseHeaders=X-Forwarded-User
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
