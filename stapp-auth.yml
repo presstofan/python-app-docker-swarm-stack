@@ -21,9 +21,9 @@ services:
         constraints:
            - node.role==manager
       labels:
-        # - "traefik.enable=true"
-        # - "traefik.docker.network=traefik-public" # put it in the same network as traefik
-        # - "traefik.constraint-label=traefik-public" # assign the same label as traefik so it can be discovered
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-public" # put it in the same network as traefik
+        - "traefik.constraint-label=traefik-public" # assign the same label as traefik so it can be discovered
         - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
         - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
         - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"
@@ -43,9 +43,9 @@ services:
       #   constraints:
       #     - node.role==manager
       labels:
-        # - "traefik.enable=true" # enable traefik
-        # - "traefik.docker.network=traefik-public" # put it in the same network as traefik
-        # - "traefik.constraint-label=traefik-public" # assign the same label as traefik so it can be discovered
+        - "traefik.enable=true" # enable traefik
+        - "traefik.docker.network=traefik-public" # put it in the same network as traefik
+        - "traefik.constraint-label=traefik-public" # assign the same label as traefik so it can be discovered
         - "traefik.http.routers.stapp.rule=Host(`${APP_DOMAIN?Variable not set}`)"
         - "traefik.http.routers.stapp.middlewares=traefik-forward-auth"
         # - "traefik.http.routers.stapp.rule=Host(`${APP_DOMAIN?Variable not set}`)" # listen to port 80 for request to APP_DOMAIN (use together with the line below)
