@@ -59,7 +59,7 @@ services:
         - "traefik.http.routers.stapp-secured.tls.certresolver=le" # use the Let's Encrypt certificate we set up earlier
         # assign app service
         - "traefik.http.routers.stapp-secured.service=stapp"
-        - "traefik.http.routers.stapp-secured.middlewares=stapp@docker"
+        - "traefik.http.routers.stapp-secured.middlewares=stapp-auth@docker"
         # redirect to Keycloak for authentication
         - "traefik.http.middlewares.stapp-auth.forwardauth.address=http://traefik-forward-auth:4181"
         - "traefik.http.middlewares.stapp-auth.forwardauth.authresponseheaders=X-Forwarded-User"
