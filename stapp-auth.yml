@@ -6,11 +6,11 @@ services:
     environment:
       - DEFAULT_PROVIDER=oidc
       - PROVIDERS_OIDC_ISSUER_URL=https://${KEYCLOAK_DOMAIN?Variable not set}/auth/realms/master
-      - PROVIDERS_OIDC_CLIENT_ID=stapp
-      - PROVIDERS_OIDC_CLIENT_SECRET=153c5c33-b5b5-444f-a0f4-45ed589c80dd
+      - PROVIDERS_OIDC_CLIENT_ID=${AUTH_CLIENT_ID?Variable not set}
+      - PROVIDERS_OIDC_CLIENT_SECRET=${AUTH_CLIENT_SECRET?Variable not set}
       - SECRET=change_to_a_random_string
       # INSECURE_COOKIE is required if not using a https entrypoint
-      - INSECURE_COOKIE=true
+      # - INSECURE_COOKIE=true
       - LOG_LEVEL=debug
     networks:
       - traefik-public
@@ -21,15 +21,16 @@ services:
         constraints:
            - node.role==manager
       labels:
-        - "traefik.enable=true"
+        - "traefik.enable=true" # enable traefik
         - "traefik.docker.network=traefik-public" # put it in the same network as traefik
         - "traefik.constraint-label=traefik-public" # assign the same label as traefik so it can be discovered
         - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
         - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
         - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"
-
-        - "traefik.http.routers.forward-auth.rule=Host(`auth.app.databentobox.com`)"
+        # receive the authentication results from Keycloak
+        - "traefik.http.routers.forward-auth.rule=Host(`auth.${APP_DOMAIN?Variable not set}`)"
         - "traefik.http.routers.forward-auth.service=traefik-forward-auth"
+
   stapp:
     image: presstofan/streamlit-demo
     depends_on:
@@ -42,9 +43,10 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+      # Use below if only place the app on workers
       # placement:
       #   constraints:
-      #     - node.role==manager
+      #     - node.role==worker
       labels:
         - "traefik.enable=true" # enable traefik
         - "traefik.docker.network=traefik-public" # put it in the same network as traefik
@@ -64,7 +66,6 @@ services:
         - "traefik.http.middlewares.stapp-auth.forwardauth.address=http://traefik-forward-auth:4181"
         - "traefik.http.middlewares.stapp-auth.forwardauth.authresponseheaders=X-Forwarded-User"
         - "traefik.http.services.stapp.loadbalancer.server.port=8501"
-
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
